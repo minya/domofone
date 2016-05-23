@@ -30,6 +30,7 @@ func main() {
 	flag.Parse()
 
 	SetUpLogger()
+	log.Printf("Start\n")
 	jar := web.NewJar()
 	transport := web.DefaultTransport(5000)
 	client := http.Client{
@@ -83,8 +84,12 @@ func main() {
 		log.Fatalf("conv string fare to num: %v \n", errConvFare)
 	}
 
+	log.Printf("Values obtained. Balance: %v, fare: %v\n", balance, fare)
+
 	lastAction := GetLastAction()
+	log.Printf("Last action was %v\n", lastAction)
 	if balance < 2*fare {
+		log.Printf("Balance is low\n")
 		if lastAction != "notify" {
 			poSettings, poErr := gopushover.ReadSettings("~/.domofone/pushover.json")
 			if nil != poErr {
@@ -104,10 +109,12 @@ func main() {
 			lastAction = "notify"
 		}
 	} else {
+		log.Printf("Balance is OK\n")
 		if lastAction == "notify" {
 			lastAction = "pass"
 		}
 	}
+	log.Printf("Last action is being set to %v\n", lastAction)
 	SetLastAction(lastAction)
 }
 
