@@ -68,20 +68,9 @@ func main() {
 	petrBytes, _ := ioutil.ReadAll(petr.Body)
 	html := string(petrBytes)
 
-	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\"green\">(.+?) руб.</b>")
-	match := reMoney.FindStringSubmatch(html)
-
-	balance, errConvBal := strconv.Atoi(match[1])
-	if nil != errConvBal {
-		log.Fatalf("conv string balance to num: %v \n", errConvBal)
-	}
-
-	reFare, _ := regexp.Compile("<td class=\"lks03\">(.+?) руб./мес.</td>")
-	matchFare := reFare.FindStringSubmatch(html)
-
-	fare, errConvFare := strconv.Atoi(matchFare[1])
-	if nil != errConvFare {
-		log.Fatalf("conv string fare to num: %v \n", errConvFare)
+	balance, fare, errParse := ParseBalance(html)
+	if nil != errParse {
+		log.Fatalf("Unable to parse html: %v \n", errParse)
 	}
 
 	log.Printf("Values obtained. Balance: %v, fare: %v\n", balance, fare)
@@ -116,6 +105,26 @@ func main() {
 	}
 	log.Printf("Last action is being set to %v\n", lastAction)
 	SetLastAction(lastAction)
+}
+
+func ParseBalance(html string) (int, int, error) {
+	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\"green\">(.+?) руб.</b>")
+	match := reMoney.FindStringSubmatch(html)
+
+	balance, errConvBal := strconv.Atoi(match[1])
+	if nil != errConvBal {
+		log.Printf("conv string balance to num: %v \n", errConvBal)
+	}
+
+	reFare, _ := regexp.Compile("<td class=\"lks03\">(.+?) руб./мес.</td>")
+	matchFare := reFare.FindStringSubmatch(html)
+
+	fare, errConvFare := strconv.Atoi(matchFare[1])
+	if nil != errConvFare {
+		log.Printf("conv string fare to num: %v \n", errConvFare)
+		return -1, -1, errConvFare
+	}
+	return balance, fare, nil
 }
 
 func SetUpLogger() {
