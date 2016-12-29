@@ -108,12 +108,13 @@ func main() {
 }
 
 func ParseBalance(html string) (int, int, error) {
-	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\"green\">(.+?) руб.</b>")
+	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\"green\">(.+?),\\d\\d руб.</b>")
 	match := reMoney.FindStringSubmatch(html)
 
 	balance, errConvBal := strconv.Atoi(match[1])
 	if nil != errConvBal {
 		log.Printf("conv string balance to num: %v \n", errConvBal)
+		return -1, -1, errConvBal
 	}
 
 	reFare, _ := regexp.Compile("<td class=\"lks03\">(.+?) руб./мес.</td>")
