@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/minya/gopushover"
-	"github.com/minya/goutils/web"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
+	"./lib"
 	"os"
 	"os/user"
 	"path"
@@ -31,18 +29,6 @@ func main() {
 
 	SetUpLogger()
 	log.Printf("Start\n")
-	jar := web.NewJar()
-	transport := web.DefaultTransport(5000)
-	client := http.Client{
-		Transport: transport,
-		Jar:       jar,
-	}
-
-	_, enterErr := client.Get("http://domofon-e.ru/lk/enter")
-	if nil != enterErr {
-		log.Fatalf("site is down: %v\n", enterErr)
-	}
-
 	user, _ := user.Current()
 	settingsPath := path.Join(user.HomeDir, ".domofone/settings.json")
 
@@ -53,22 +39,7 @@ func main() {
 	}
 
 	json.Unmarshal(settingsBin, &settings)
-	loginUrl := "http://domofon-e.ru/templates/petrunya/ajax/getData/"
-	data := url.Values{}
-	data.Set("get", "checkUser")
-	data.Set("dg", settings.DomofonELogin)
-	data.Set("ps", settings.DomofonEPassword)
-
-	respGetData, errGetData := client.PostForm(loginUrl, data)
-	if nil != errGetData || respGetData.StatusCode != 200 {
-		log.Fatalf("getData: %v \n", errGetData)
-	}
-
-	petr, _ := client.Get("http://xn--e1aqefjh9f.xn--p1ai/lk/state/")
-	petrBytes, _ := ioutil.ReadAll(petr.Body)
-	html := string(petrBytes)
-
-	balance, fare, errParse := ParseBalance(html)
+	balance, fare, errParse := lib.GetDomofoneBalance(settings.DomofonELogin, settings.DomofonEPassword)
 	if nil != errParse {
 		log.Fatalf("Unable to parse html: %v \n", errParse)
 	}
