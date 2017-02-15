@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"github.com/minya/domofone/lib"
 	"github.com/minya/gopushover"
 	"io/ioutil"
 	"log"
-	"./lib"
 	"os"
 	"os/user"
 	"path"
