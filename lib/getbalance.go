@@ -2,12 +2,12 @@ package lib
 
 import (
 	"github.com/minya/goutils/web"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
-	"io/ioutil"
-	"log"
 )
 
 func GetDomofoneBalance(login string, password string) (int, int, error) {
@@ -28,6 +28,7 @@ func GetDomofoneBalance(login string, password string) (int, int, error) {
 	data.Set("get", "checkUser")
 	data.Set("dg", login)
 	data.Set("ps", password)
+	data.Set("persData", "1")
 
 	respGetData, errGetData := client.PostForm(loginUrl, data)
 	if nil != errGetData || respGetData.StatusCode != 200 {
