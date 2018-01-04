@@ -10,8 +10,6 @@ import (
 	"os"
 	"os/user"
 	"path"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -27,7 +25,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	SetUpLogger()
+	setUpLogger()
 	log.Printf("Start\n")
 	user, _ := user.Current()
 	settingsPath := path.Join(user.HomeDir, ".domofone/settings.json")
@@ -46,7 +44,7 @@ func main() {
 
 	log.Printf("Values obtained. Balance: %v, fare: %v\n", balance, fare)
 
-	lastAction := GetLastAction()
+	lastAction := getLastAction()
 	log.Printf("Last action was %v\n", lastAction)
 	if balance < 2*fare {
 		log.Printf("Balance is low\n")
@@ -75,31 +73,10 @@ func main() {
 		}
 	}
 	log.Printf("Last action is being set to %v\n", lastAction)
-	SetLastAction(lastAction)
+	setLastAction(lastAction)
 }
 
-func ParseBalance(html string) (int, int, error) {
-	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\"green\">(.+?),\\d\\d руб.</b>")
-	match := reMoney.FindStringSubmatch(html)
-
-	balance, errConvBal := strconv.Atoi(match[1])
-	if nil != errConvBal {
-		log.Printf("conv string balance to num: %v \n", errConvBal)
-		return -1, -1, errConvBal
-	}
-
-	reFare, _ := regexp.Compile("<td class=\"lks03\">(.+?) руб./мес.</td>")
-	matchFare := reFare.FindStringSubmatch(html)
-
-	fare, errConvFare := strconv.Atoi(matchFare[1])
-	if nil != errConvFare {
-		log.Printf("conv string fare to num: %v \n", errConvFare)
-		return -1, -1, errConvFare
-	}
-	return balance, fare, nil
-}
-
-func SetUpLogger() {
+func setUpLogger() {
 	logFile, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
@@ -107,13 +84,8 @@ func SetUpLogger() {
 	log.SetOutput(logFile)
 }
 
-type Settings struct {
-	DomofonELogin    string
-	DomofonEPassword string
-}
-
-func GetLastAction() string {
-	content, errRead := ioutil.ReadFile(ExpandUserHome("~/.domofone/state.json"))
+func getLastAction() string {
+	content, errRead := ioutil.ReadFile(expandUserHome("~/.domofone/state.json"))
 	if nil != errRead {
 		return "pass"
 	}
@@ -126,21 +98,21 @@ func GetLastAction() string {
 	return "pass"
 }
 
-func SetLastAction(value string) error {
+func setLastAction(value string) error {
 	state := State{}
 	state.LastAction = value
 	content, errSer := json.Marshal(state)
 	if nil != errSer {
 		return errSer
 	}
-	errWrite := ioutil.WriteFile(ExpandUserHome("~/.domofone/state.json"), content, 0660)
+	errWrite := ioutil.WriteFile(expandUserHome("~/.domofone/state.json"), content, 0660)
 	if nil != errWrite {
 		return errWrite
 	}
 	return nil
 }
 
-func ExpandUserHome(spath string) string {
+func expandUserHome(spath string) string {
 	if strings.Index(spath, "~/") != 0 {
 		return spath
 	}
@@ -150,4 +122,9 @@ func ExpandUserHome(spath string) string {
 
 type State struct {
 	LastAction string
+}
+
+type Settings struct {
+	DomofonELogin    string
+	DomofonEPassword string
 }
