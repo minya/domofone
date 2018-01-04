@@ -30,7 +30,7 @@ func main() {
 	user, _ := user.Current()
 	settingsPath := path.Join(user.HomeDir, ".domofone/settings.json")
 
-	var settings Settings
+	var settings settings
 	settingsBin, settingsErr := ioutil.ReadFile(settingsPath)
 	if nil != settingsErr {
 		log.Fatalf("read settings: %v \n", settingsErr)
@@ -89,7 +89,7 @@ func getLastAction() string {
 	if nil != errRead {
 		return "pass"
 	}
-	var state State
+	var state state
 	errDeser := json.Unmarshal(content, &state)
 	if nil != errDeser {
 		return "pass"
@@ -99,7 +99,7 @@ func getLastAction() string {
 }
 
 func setLastAction(value string) error {
-	state := State{}
+	state := state{}
 	state.LastAction = value
 	content, errSer := json.Marshal(state)
 	if nil != errSer {
@@ -120,11 +120,11 @@ func expandUserHome(spath string) string {
 	return path.Join(user.HomeDir, strings.TrimLeft(spath, "~/"))
 }
 
-type State struct {
+type state struct {
 	LastAction string
 }
 
-type Settings struct {
+type settings struct {
 	DomofonELogin    string
 	DomofonEPassword string
 }
