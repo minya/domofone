@@ -1,16 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"github.com/minya/domofone/lib"
 	"github.com/minya/gopushover"
-	"io/ioutil"
+	"github.com/minya/goutils/config"
 	"log"
 	"os"
-	"os/user"
-	"path"
-	"strings"
 )
 
 var logPath string
@@ -27,16 +23,13 @@ func main() {
 
 	setUpLogger()
 	log.Printf("Start\n")
-	user, _ := user.Current()
-	settingsPath := path.Join(user.HomeDir, ".domofone/settings.json")
 
 	var settings settings
-	settingsBin, settingsErr := ioutil.ReadFile(settingsPath)
+	settingsErr := config.UnmarshalJson(&settings, ".domofone/settings.json")
 	if nil != settingsErr {
 		log.Fatalf("read settings: %v \n", settingsErr)
 	}
 
-	json.Unmarshal(settingsBin, &settings)
 	balance, fare, errParse := lib.GetDomofoneBalance(settings.DomofonELogin, settings.DomofonEPassword)
 	if nil != errParse {
 		log.Fatalf("Unable to parse html: %v \n", errParse)
@@ -85,12 +78,8 @@ func setUpLogger() {
 }
 
 func getLastAction() string {
-	content, errRead := ioutil.ReadFile(expandUserHome("~/.domofone/state.json"))
-	if nil != errRead {
-		return "pass"
-	}
 	var state state
-	errDeser := json.Unmarshal(content, &state)
+	errDeser := config.UnmarshalJson(&state, "~/.domofone/state.json")
 	if nil != errDeser {
 		return "pass"
 	}
@@ -101,23 +90,11 @@ func getLastAction() string {
 func setLastAction(value string) error {
 	state := state{}
 	state.LastAction = value
-	content, errSer := json.Marshal(state)
-	if nil != errSer {
-		return errSer
-	}
-	errWrite := ioutil.WriteFile(expandUserHome("~/.domofone/state.json"), content, 0660)
+	errWrite := config.MarshalJson(state, "~/.domofone/state.json")
 	if nil != errWrite {
 		return errWrite
 	}
 	return nil
-}
-
-func expandUserHome(spath string) string {
-	if strings.Index(spath, "~/") != 0 {
-		return spath
-	}
-	user, _ := user.Current()
-	return path.Join(user.HomeDir, strings.TrimLeft(spath, "~/"))
 }
 
 type state struct {
