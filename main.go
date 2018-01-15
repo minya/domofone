@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
+	"log"
+	"os"
+
 	"github.com/minya/domofone/lib"
 	"github.com/minya/gopushover"
 	"github.com/minya/goutils/config"
-	"log"
-	"os"
 )
 
 var logPath string
@@ -25,7 +26,7 @@ func main() {
 	log.Printf("Start\n")
 
 	var settings settings
-	settingsErr := config.UnmarshalJson(&settings, ".domofone/settings.json")
+	settingsErr := config.UnmarshalJson(&settings, "~/.domofone/settings.json")
 	if nil != settingsErr {
 		log.Fatalf("read settings: %v \n", settingsErr)
 	}
