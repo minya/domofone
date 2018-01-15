@@ -51,7 +51,7 @@ func main() {
 			pushRes, pushErr := gopushover.SendMessage(
 				poSettings.Token, poSettings.User, "Domofon-e low balance", "Your balance is low")
 			if nil != pushErr {
-				log.Fatalf("Can't push: %v\n")
+				log.Fatalf("Can't push: %v\n", pushErr)
 			}
 
 			if nil != pushRes.Errors && len(pushRes.Errors) > 0 {
@@ -85,7 +85,6 @@ func getLastAction() string {
 		return "pass"
 	}
 	return state.LastAction
-	return "pass"
 }
 
 func setLastAction(value string) error {
