@@ -43,6 +43,7 @@ func GetDomofoneBalance(login string, password string) (int, int, error) {
 }
 
 func ParseBalance(html string) (int, int, error) {
+	//fmt.Printf("%v\n", html)
 	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\"green\">(.+?),\\d\\d руб.</b>")
 	match := reMoney.FindStringSubmatch(html)
 
@@ -52,7 +53,7 @@ func ParseBalance(html string) (int, int, error) {
 		return -1, -1, errConvBal
 	}
 
-	reFare, _ := regexp.Compile("<td class=\"lks03\">(.+?) руб./мес.</td>")
+	reFare, _ := regexp.Compile("<td class=\"lks03\">(.+?) руб./мес")
 	matchFare := reFare.FindStringSubmatch(html)
 
 	fare, errConvFare := strconv.Atoi(matchFare[1])
