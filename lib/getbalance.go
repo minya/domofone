@@ -1,15 +1,17 @@
 package lib
 
 import (
-	"github.com/minya/goutils/web"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
+
+	"github.com/minya/goutils/web"
 )
 
+//GetDomofoneBalance func to return balance for account
 func GetDomofoneBalance(login string, password string) (int, int, error) {
 	jar := web.NewJar()
 	transport := web.DefaultTransport(5000)
@@ -23,28 +25,28 @@ func GetDomofoneBalance(login string, password string) (int, int, error) {
 		return -1, -1, enterErr
 	}
 
-	loginUrl := "http://domofon-e.ru/templates/petrunya/ajax/getData/"
+	loginURL := "https://domofon-e.ru/templates/petrunya/ajax/getData/"
 	data := url.Values{}
 	data.Set("get", "checkUser")
 	data.Set("dg", login)
 	data.Set("ps", password)
 	data.Set("persData", "1")
 
-	respGetData, errGetData := client.PostForm(loginUrl, data)
+	respGetData, errGetData := client.PostForm(loginURL, data)
 	if nil != errGetData || respGetData.StatusCode != 200 {
 		return -1, -1, errGetData
 	}
 
-	petr, _ := client.Get("http://xn--e1aqefjh9f.xn--p1ai/lk/state/")
+	petr, _ := client.Get("https://domofon-e.ru/lk/state/")
 	petrBytes, _ := ioutil.ReadAll(petr.Body)
 	html := string(petrBytes)
 
 	return ParseBalance(html)
 }
 
+//ParseBalance extracts balance value from html
 func ParseBalance(html string) (int, int, error) {
-	//fmt.Printf("%v\n", html)
-	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\"green\">(.+?),\\d\\d руб.</b>")
+	reMoney, _ := regexp.Compile("<td class=\"lks03\"><b class=\".+?\">(.+?),\\d\\d руб.</b>")
 	match := reMoney.FindStringSubmatch(html)
 
 	balance, errConvBal := strconv.Atoi(match[1])
